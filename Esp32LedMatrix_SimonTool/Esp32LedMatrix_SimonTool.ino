@@ -4,7 +4,7 @@
 #include <WiFi.h>          //https://github.com/esp8266/Arduino
 #endif
 
-//needed for library
+  //needed for library
 #if defined(ESP8266)
 #include <ESP8266WebServer.h>
 #else
@@ -12,15 +12,15 @@
 #endif
 #include <DNSServer.h>
 #include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager
-//#include "Mqttmess.h"
-
+  //#include "Mqttmess.h"
+#include "Ledmatrix.h"
 #include <ArduinoJson.h>
 #include <PubSubClient.h>
 #include <ArduinoJWT.h>
 
 #define TRIGGER_PIN 0
 
-WiFiClient espClient;
+  WiFiClient espClient;
 PubSubClient client(espClient);
 
 //#define ResetPin D13
@@ -64,11 +64,11 @@ void mqttCallback(char *topic, byte *payload, unsigned int length)
     //Serial.print((char)payload[i]);
     json_str += (char)payload[i];
   }
-  Serial.println(json_str);
-  //  Serial.println();
-  //  StaticJsonBuffer<200> jsonBuffer;
-  //  JsonObject &msg = jsonBuffer.parseObject(json_str);
-  //   Serial.printf(msg));
+  ViewInfor(json_str);
+  //    Serial.println();
+  //    StaticJsonBuffer<200> jsonBuffer;
+  //    JsonObject &msg = jsonBuffer.parseObject(json_str);
+  //     Serial.printf(msg));
   //  if (!msg.success())
   //  {
   //    Serial.println("parseObject() failed");
@@ -195,7 +195,7 @@ void InitMqtt()
   Serial.println(WiFi.macAddress());
   MAC = WiFi.macAddress();
   MAC.replace(":", "");
-  topic_in = "/v1/ledmatrix/" + MAC + "/in";
+  topic_in = "/v1/ledmatrix/" + MAC + "/in/";
   topic_out = "/v1/ledmatrix/" + MAC + "/out/";
   //  Serial.println(MAC);
   if (MQTT_STT == true)
@@ -227,7 +227,7 @@ void InitWifi() {
   //Local intialization. Once its business is done, there is no need to keep it around
 
   //reset settings - for testing
-  //wifiManager.resetSettings();
+  wifiManager.resetSettings();
 
   //sets timeout until configuration portal gets turned off
   //useful to make it all retry or go to sleep
@@ -241,8 +241,8 @@ void InitWifi() {
   //WITHOUT THIS THE AP DOES NOT SEEM TO WORK PROPERLY WITH SDK 1.5 , update to at least 1.5.1
   //WiFi.mode(WIFI_STA);
 
-  //  if (!wifiManager.startConfigPortal("LedMatrix_SimonTool")) { //autoConnect
-  if (!wifiManager.autoConnect("LedMatrix_SimonTool")) { //autoConnect
+  //    if (!wifiManager.startConfigPortal("LedMatrix_Simon")) { //Clear user/pass router when restart
+  if (!wifiManager.autoConnect("LedMatrix_Simon")) { //Save user/pass router when restart
     Serial.println("failed to connect and hit timeout");
     MQTT_STT = false;
     delay(3000);
@@ -266,8 +266,10 @@ void setup() {
   pinMode(TRIGGER_PIN, INPUT);
   //  pinMode(BUILTIN_LED, OUTPUT); // Initialize the BUILTIN_LED pin as an output
   //  pinMode(ResetPin, INPUT_PULLUP);
+  InitLedMatrix();
   InitWifi();
   InitMqtt();
+  TestView();
 }
 
 void loop() {
